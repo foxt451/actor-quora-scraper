@@ -8,6 +8,7 @@
 import { Actor } from "apify";
 // For more information, see https://crawlee.dev
 import { BasicCrawler } from "crawlee";
+import { paginationParams } from "./constants/api.js";
 import { ERROR_MESSAGES } from "./constants/error_messages.js";
 import { constructGraphQLRequest } from "./helpers/api.js";
 import { router } from "./routes.js";
@@ -27,12 +28,19 @@ const { query } = input;
 const crawler = new BasicCrawler({
     requestHandler: router,
     useSessionPool: true,
+    sessionPoolOptions: {
+        maxPoolSize: 1,
+        sessionOptions: {
+            maxAgeSecs: Infinity,
+            maxUsageCount: Infinity,
+        },
+    },
 });
 
 await crawler.run([
     constructGraphQLRequest(QueryType.SEARCH, {
-        after: "19",
-        first: 10,
+        after: "0",
+        first: paginationParams.searchBatch,
         query,
     }),
 ]);

@@ -1,6 +1,5 @@
 import { RequestOptions } from "crawlee";
 import { BASE_URL } from "../constants/api.js";
-import { graphQLqueryNames } from "../constants/query_names.js";
 import {
     SearchQueryArguments,
     SearchQueryVariables,
@@ -20,7 +19,7 @@ export const constructGraphQLRequest = <T extends QueryType>(
         method: "POST",
         userData: {
             initialPayload: {
-                queryName: graphQLqueryNames[queryType],
+                queryName: queryType,
                 variables,
             },
             operationType: queryType,
@@ -30,7 +29,7 @@ export const constructGraphQLRequest = <T extends QueryType>(
 };
 
 const constructGraphQLUrl = (queryType: QueryType): string => {
-    return `${BASE_URL}/graphql/gql_para_POST?q=${graphQLqueryNames[queryType]}`;
+    return `${BASE_URL}/graphql/gql_para_POST?q=${queryType}`;
 };
 
 const constructGraphQLVariables = {
