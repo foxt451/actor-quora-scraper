@@ -1,3 +1,6 @@
+// minimal program for reaching
+
+import { log } from "crawlee";
 import { gotScraping } from "got-scraping";
 
 const testHeaders = `Content-Type: application/json
@@ -9,30 +12,15 @@ const obj = testHeaders.split("\n").reduce((prev, cur) => {
     return { ...prev, [key]: value };
 }, {});
 
-console.log(obj);
-
 const result = await gotScraping.post(
     "https://www.quora.com/graphql/gql_para_POST?q=SearchResultsListQuery",
     {
-        body: JSON.stringify({
-            queryName: "SearchResultsListQuery",
-            variables: {
-                query: "how to walk",
-                disableSpellCheck: null,
-                resultType: "all_types",
-                author: null,
-                time: "all_times",
-                first: 10,
-                after: "19",
-                tribeId: null,
-            },
-            extensions: {
-                hash: "9dce4809922a976f52b021ed9bbfb4d49bff450675bad8c8913518b0e100d3c4",
-            },
-        }),
+        body: `query SearchResultsListQuery{
+    __typename
+}`,
         headers: obj,
     }
 );
-console.log(result.statusCode, result.statusMessage);
-console.log(result.body);
-console.log(result.rawHeaders);
+log.info(result.statusCode.toString());
+log.info(result.body);
+log.info(JSON.stringify(result.headers));

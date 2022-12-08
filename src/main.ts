@@ -5,24 +5,37 @@
  */
 
 // For more information, see https://sdk.apify.com
-import { Actor } from 'apify';
+import { Actor } from "apify";
 // For more information, see https://crawlee.dev
-import { CheerioCrawler } from 'crawlee';
-import { router } from './routes.js';
+import { BasicCrawler } from "crawlee";
+import { ERROR_MESSAGES } from "./constants/error_messages.js";
+import { constructGraphQLRequest } from "./helpers/api.js";
+import { router } from "./routes.js";
+import { Input } from "./types/input.js";
+import { QueryType } from "./types/query_types.js";
 
 // Initialize the Apify SDK
 await Actor.init();
 
-const startUrls = ['https://apify.com'];
+const input = await Actor.getInput<Input>();
+if (!input) {
+    throw new Error(ERROR_MESSAGES.INPUT_EMPTY);
+}
 
-const proxyConfiguration = await Actor.createProxyConfiguration();
+const { query } = input;
 
-const crawler = new CheerioCrawler({
-    proxyConfiguration,
+const crawler = new BasicCrawler({
     requestHandler: router,
+    useSessionPool: true,
 });
 
-await crawler.run(startUrls);
+await crawler.run([
+    constructGraphQLRequest(QueryType.SEARCH, {
+        after: "19",
+        first: 10,
+        query,
+    }),
+]);
 
 // Exit successfully
 await Actor.exit();

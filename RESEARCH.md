@@ -1,8 +1,8 @@
 # Question search
 
 Quora uses some sort of graphQL API. For example, searching for a question can be made with this endpoint, POST method:
-https://www.quora.com/graphql/gql_para_POST?q=SearchResultsListQuery.
-It is not exactly graphQL on client, however, because the payload is like this:
+https://www.quora.com/graphql/gql_para_POST?q=SearchResultsListQuery..
+It uses persisted queries:
 ```
 {
     "queryName": "SearchResultsListQuery",
