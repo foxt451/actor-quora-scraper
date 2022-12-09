@@ -1,18 +1,15 @@
 {
-    "title": "CheerioCrawler Template",
+    "title": "Quora Scraper input schema",
+    "description": "This is actor input schema for Quora Scraper, it lets you provide search term for your run.",
     "type": "object",
     "schemaVersion": 1,
     "properties": {
-        "startUrls": {
-            "title": "Start URLs",
-            "type": "array",
-            "description": "URLs to start with.",
-            "editor": "requestListSources",
-            "prefill": [
-                {
-                    "url": "https://apify.com"
-                }
-            ]
+        "query": {
+            "title": "Search term",
+            "type": "string",
+            "description": "Quora will search for questions using this string.",
+            "editor": "textfield"
         }
-    }
+    },
+    "required": ["query"]
 }

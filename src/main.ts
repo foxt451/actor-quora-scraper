@@ -32,8 +32,8 @@ const crawler = new BasicCrawler({
     sessionPoolOptions: {
         maxPoolSize: 1,
         sessionOptions: {
-            maxAgeSecs: Infinity,
-            maxUsageCount: Infinity,
+            maxAgeSecs: 9999999,
+            maxUsageCount: 9999999,
         },
     },
 });
@@ -41,7 +41,7 @@ const crawler = new BasicCrawler({
 await crawler.run([
     constructGraphQLRequest(QueryType.SEARCH, {
         after: "0",
-        first: PAGINATION_PARAMS.SEARCH_BATCH,
+        first: PAGINATION_PARAMS.PAGINATION_BATCH,
         query,
         ...nonConfigurableQueryArguments[QueryType.SEARCH],
     }),

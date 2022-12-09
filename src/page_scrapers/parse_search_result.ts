@@ -1,6 +1,6 @@
 import { BASE_URL } from "../constants/api.js";
-import { parseJsonContent } from "./parseJsonContent.js";
-import { unixToDateIso } from "./unixToDateIso.js";
+import { parseJsonContent } from "../helpers/parse_json_content.js";
+import { unixToDateIso } from "../helpers/unixToDateIso.js";
 
 export const parseSearchResult = (
     result: any

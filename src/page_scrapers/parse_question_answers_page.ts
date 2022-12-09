@@ -1,6 +1,6 @@
-import { combineUrl } from "./combineUrl.js";
-import { parseJsonContent } from "./parseJsonContent.js";
-import { unixToDateIso } from "./unixToDateIso.js";
+import { combineUrl } from "../helpers/combine_url.js";
+import { parseJsonContent } from "../helpers/parse_json_content.js";
+import { unixToDateIso } from "../helpers/unixToDateIso.js";
 
 // endpoint for question answers returns some other entities, so it's needed to filter by typename
 const ANSWER_TYPENAME = "QuestionAnswerItem";

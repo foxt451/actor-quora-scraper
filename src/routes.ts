@@ -1,58 +1,46 @@
 import { createBasicRouter, Dataset } from "crawlee";
-import { gotScraping } from "got-scraping";
-import { BASE_URL, PAGINATION_PARAMS } from "./constants/api.js";
-import { QUERY_EXTENSIONS } from "./constants/extension_codes.js";
+import { PAGINATION_PARAMS } from "./constants/api.js";
+import { DEFAULT_QUERY_EXTENSIONS } from "./constants/extension_codes.js";
 import { constructGraphQLRequest } from "./helpers/api.js";
-import { mergePageData } from "./helpers/mergePageData.js";
-import { parseQuestionAnswersPage } from "./helpers/parseQuestionAnswersPage.js";
-import { parseSearchResult } from "./helpers/parseSearchResult.js";
-import { scrapeHashes } from "./helpers/scrape_hash.js";
-import { scrapeHeaders } from "./helpers/scrape_headers.js";
-import { NecessaryHeaders } from "./types/header_collection.js";
+import { mergePageData } from "./helpers/merge_page_data.js";
+import { parseQuestionAnswersPage } from "./page_scrapers/parse_question_answers_page.js";
+import { parseSearchResult } from "./page_scrapers/parse_search_result.js";
+import { scrapeCookies } from "./page_scrapers/scrape_cookies.js";
+import { CrawlerState } from "./types/crawler_state.js";
 import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
 import { QueryType } from "./types/query_types.js";
 
 export const router = createBasicRouter();
 
+const defaultCrawlerState: CrawlerState = {
+    extensionCodes: DEFAULT_QUERY_EXTENSIONS,
+};
+
 // this middleware gets various anti-scraping tokens and cookies for each session
 // additionaly, it grabs extension hash for Search query so as not to make
 // additional requests to homepage later
-router.use(async ({ session, log }) => {
-    if (session && session.getCookies(BASE_URL).length === 0) {
-        log.debug(`Attaching cookies and headers for sesssion: ${session.id}`);
-        const response = await gotScraping({
-            method: "GET",
-            url: BASE_URL,
-        });
-        session.setCookiesFromResponse(response);
-        const headers: NecessaryHeaders = {
-            "Content-Type": "application/json",
-            ...scrapeHeaders(response.body),
-        };
-        session.userData.headers = headers;
 
-        // the first session during execution will stumble upon not fresh hashes
-        const staleHashes: QueryType[] = Object.keys(QUERY_EXTENSIONS).filter(
-            (queryType) => !QUERY_EXTENSIONS[queryType as QueryType].isFresh
-        ) as QueryType[];
-
-        const newHashes = await scrapeHashes(response.body, staleHashes);
-        for (const { hash, opType } of newHashes) {
-            if (hash) {
-                QUERY_EXTENSIONS[opType] = {
-                    hash,
-                    isFresh: true,
-                };
-            }
-        }
+// avoid race condition by making other session requests wait for the first request that went to scrape cookies
+// this avoids concurrent session requests hitting home page to scrape cookies multiple times
+const scrapeCookiesPromiseMap: Map<string, Promise<void>> = new Map();
+router.use(async ({ session, log, crawler }) => {
+    const crawlerState = await crawler.useState(defaultCrawlerState);
+    if (session && !scrapeCookiesPromiseMap.get(session.id)) {
+        const scrapeCookiesPromise = scrapeCookies(session, log, crawlerState);
+        scrapeCookiesPromiseMap.set(session.id, scrapeCookiesPromise);
+        await scrapeCookiesPromise;
+    } else if (session) {
+        await scrapeCookiesPromiseMap.get(session.id);
     }
 });
 
-router.use(({ request }) => {
+router.use(async ({ request, crawler }) => {
+    const crawlerState = await crawler.useState(defaultCrawlerState);
     if (request.userData.operationType !== undefined) {
         request.userData.initialPayload.extensions = {
-            hash: QUERY_EXTENSIONS[request.userData.operationType as QueryType]
-                .hash,
+            hash: crawlerState.extensionCodes[
+                request.userData.operationType as QueryType
+            ].hash,
         };
     }
     request.payload = JSON.stringify(request.userData.initialPayload);
@@ -84,7 +72,7 @@ router.addHandler(
                 constructGraphQLRequest(QueryType.QUESTION_ANSWERS, {
                     after: "0",
                     qid: question.qid,
-                    first: PAGINATION_PARAMS.SEARCH_BATCH,
+                    first: PAGINATION_PARAMS.PAGINATION_BATCH,
                     ...nonConfigurableQueryArguments[
                         QueryType.QUESTION_ANSWERS
                     ],
@@ -96,7 +84,7 @@ router.addHandler(
             await crawler.addRequests([
                 constructGraphQLRequest(QueryType.SEARCH, {
                     after: pageInfo.endCursor,
-                    first: PAGINATION_PARAMS.SEARCH_BATCH,
+                    first: PAGINATION_PARAMS.PAGINATION_BATCH,
                     query: request.userData.initialPayload.variables.query,
                     ...nonConfigurableQueryArguments[QueryType.SEARCH],
                 }),
@@ -125,7 +113,7 @@ router.addHandler(
             await crawler.addRequests([
                 constructGraphQLRequest(QueryType.QUESTION_ANSWERS, {
                     after: pageInfo.endCursor,
-                    first: PAGINATION_PARAMS.SEARCH_BATCH,
+                    first: PAGINATION_PARAMS.PAGINATION_BATCH,
                     qid,
                     ...nonConfigurableQueryArguments[
                         QueryType.QUESTION_ANSWERS
