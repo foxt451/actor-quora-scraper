@@ -1,21 +1,6 @@
 import { BASE_URL } from "../constants/api.js";
+import { parseJsonContent } from "./parseJsonContent.js";
 import { unixToDateIso } from "./unixToDateIso.js";
-
-const scrapableQuestionProperties = [
-    "qid",
-    "id",
-    "url",
-    "title",
-    "creationTime",
-];
-
-const parseTitle = (titleObj: string): string => {
-    const matches = /"text":[ ]?"(.*?)"/.exec(titleObj);
-    if (!matches) {
-        return titleObj;
-    }
-    return matches.slice(1).join("");
-};
 
 export const parseSearchResult = (
     result: any
@@ -29,16 +14,17 @@ export const parseSearchResult = (
     const { edges, pageInfo } = result.data.searchConnection;
 
     const questions: any[] = edges.map((edge: any) => {
-        const question: Record<string, unknown> = {};
-
-        scrapableQuestionProperties.forEach((prop) => {
-            question[prop] = edge.node.question[prop];
-        });
-
-        question.url = `${BASE_URL}${question.url}`;
-        question.title = parseTitle(question.title as string);
-        question.creationTime = unixToDateIso(question.creationTime as number);
-
+        const { qid, id, url, title, creationTime, answerCount } =
+            edge.node.question;
+        const question: Record<string, unknown> = {
+            qid,
+            id,
+            url: `${BASE_URL}${url}`,
+            title: parseJsonContent(title),
+            originalTitle: title,
+            creationTime: unixToDateIso(creationTime),
+            answerCount,
+        };
         return question;
     });
     return {

@@ -12,4 +12,8 @@ export const QUERY_EXTENSIONS: Record<QueryType, HashInfo> = {
         hash: "9dce4809922a976f52b021ed9bbfb4d49bff450675bad8c8913518b0e100d3c4",
         isFresh: false,
     },
+    [QueryType.QUESTION_ANSWERS]: {
+        hash: "2421b6b0e11c573d642b6a9b62e7d66631ff0268423ed6c5fe50f7a5f959339b",
+        isFresh: false,
+    },
 };

@@ -1,16 +1,33 @@
-// arguments denote what can be passed by user/scraper to create payload, variables denote
-// what will actually be sent with the payload, including various non-configurable boilerplate variables
+import { QueryType } from "./query_types.js";
 
-export type SearchQueryArguments = {
-    query: string;
-    first: number;
-    after: string;
+export type QueryArguments = {
+    [QueryType.SEARCH]: {
+        query: string;
+        first: number;
+        after: string;
+        tribeId: null;
+        time: "all_times";
+        author: null;
+        resultType: "question";
+        disableSpellCheck: null;
+    };
+    [QueryType.QUESTION_ANSWERS]: {
+        qid: number;
+        first: number;
+        after: string;
+        forceScoreVersion: "hide_relevant_answers";
+    };
 };
 
-export type SearchQueryVariables = SearchQueryArguments & {
-    tribeId: null;
-    time: "all_times";
-    author: null;
-    resultType: string;
-    disableSpellCheck: null;
-};
+export const nonConfigurableQueryArguments = {
+    [QueryType.SEARCH]: {
+        tribeId: null,
+        time: "all_times",
+        author: null,
+        resultType: "question",
+        disableSpellCheck: null,
+    },
+    [QueryType.QUESTION_ANSWERS]: {
+        forceScoreVersion: "hide_relevant_answers",
+    },
+} as const;

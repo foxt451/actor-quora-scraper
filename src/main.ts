@@ -8,11 +8,12 @@
 import { Actor } from "apify";
 // For more information, see https://crawlee.dev
 import { BasicCrawler } from "crawlee";
-import { paginationParams } from "./constants/api.js";
+import { PAGINATION_PARAMS } from "./constants/api.js";
 import { ERROR_MESSAGES } from "./constants/error_messages.js";
 import { constructGraphQLRequest } from "./helpers/api.js";
 import { router } from "./routes.js";
 import { Input } from "./types/input.js";
+import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
 import { QueryType } from "./types/query_types.js";
 
 // Initialize the Apify SDK
@@ -40,8 +41,9 @@ const crawler = new BasicCrawler({
 await crawler.run([
     constructGraphQLRequest(QueryType.SEARCH, {
         after: "0",
-        first: paginationParams.searchBatch,
+        first: PAGINATION_PARAMS.SEARCH_BATCH,
         query,
+        ...nonConfigurableQueryArguments[QueryType.SEARCH],
     }),
 ]);
 

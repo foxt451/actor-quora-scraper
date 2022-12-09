@@ -1,26 +1,22 @@
 import { RequestOptions } from "crawlee";
 import { BASE_URL } from "../constants/api.js";
-import {
-    SearchQueryArguments,
-    SearchQueryVariables,
-} from "../types/query_arguments.js";
+import { QueryArguments } from "../types/query_arguments.js";
 import { QueryType } from "../types/query_types.js";
 
 export const constructGraphQLRequest = <T extends QueryType>(
     queryType: T,
-    queryVariableArgs: Parameters<typeof constructGraphQLVariables[T]>[0]
+    queryArgs: QueryArguments[T]
 ): RequestOptions => {
-    const url = constructGraphQLUrl(queryType)
-    const variables = constructGraphQLVariables[queryType](queryVariableArgs)
+    const url = constructGraphQLUrl(queryType);
 
     return {
-        uniqueKey: url + JSON.stringify(variables),
+        uniqueKey: url + JSON.stringify(queryArgs),
         url,
         method: "POST",
         userData: {
             initialPayload: {
                 queryName: queryType,
-                variables,
+                variables: queryArgs,
             },
             operationType: queryType,
         },
@@ -31,14 +27,3 @@ export const constructGraphQLRequest = <T extends QueryType>(
 const constructGraphQLUrl = (queryType: QueryType): string => {
     return `${BASE_URL}/graphql/gql_para_POST?q=${queryType}`;
 };
-
-const constructGraphQLVariables = {
-    [QueryType.SEARCH]: (args: SearchQueryArguments): SearchQueryVariables => ({
-        ...args,
-        author: null,
-        disableSpellCheck: null,
-        resultType: "question",
-        time: "all_times",
-        tribeId: null,
-    }),
-} as const;
