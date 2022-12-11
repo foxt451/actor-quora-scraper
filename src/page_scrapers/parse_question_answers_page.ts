@@ -1,3 +1,4 @@
+import { Log } from "apify";
 import { combineUrl } from "../helpers/combine_url.js";
 import { parseJsonContent } from "../helpers/parse_json_content.js";
 import { unixToDateIso } from "../helpers/unixToDateIso.js";
@@ -8,7 +9,8 @@ const ANSWER_TYPENAME = "QuestionAnswerItem";
 
 // API responses typed as any deliberately because API is complex and subject to change
 export const parseQuestionAnswersPage = (
-    result: any
+    result: any,
+    log: Log
 ): {
     answers: AnswerInfo[];
     pageInfo: {
@@ -17,12 +19,15 @@ export const parseQuestionAnswersPage = (
     };
 } => {
     const { edges, pageInfo } = result.data.question.pagedListDataConnection;
-    const answers: AnswerInfo[] = edges
-        .filter((edge: any) =>
+    let failedAnswersNum = 0;
+    const answers: AnswerInfo[] = [];
+    for (const edge of edges) {
+        try {
             // eslint-disable-next-line no-underscore-dangle
-            edge.node.__typename.includes(ANSWER_TYPENAME)
-        )
-        .map((edge: any) => {
+            if (!edge.node.__typename.includes(ANSWER_TYPENAME)) {
+                continue;
+            }
+
             const {
                 aid,
                 id,
@@ -52,7 +57,20 @@ export const parseQuestionAnswersPage = (
                     familyName: nameInfo.familyName,
                 })),
             };
-            return answer;
-        });
+            answers.push(answer);
+        } catch {
+            log.debug(
+                `Failed to parse (or reliably determine the typename of) the following object as an answer edge: ${JSON.stringify(
+                    edge
+                )}`
+            );
+            failedAnswersNum++;
+        }
+        if (failedAnswersNum > 0) {
+            log.info(
+                `Failed to parse ${failedAnswersNum} answer(s). Turn on DEBUG logs to see what objects the crawler tried to extract info from, but couldn't.`
+            );
+        }
+    }
     return { answers, pageInfo };
 };

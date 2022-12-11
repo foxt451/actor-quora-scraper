@@ -8,6 +8,7 @@ import { parseQuestionAnswersPage } from "./page_scrapers/parse_question_answers
 import { parseSearchResult } from "./page_scrapers/parse_search_result.js";
 import { scrapeCookies } from "./page_scrapers/scrape_cookies.js";
 import { CrawlerState } from "./types/crawler_state.js";
+import { AnswerInfo, PageInfo, QuestionInfo } from "./types/parser_results.js";
 import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
 import { QueryType } from "./types/query_types.js";
 
@@ -61,7 +62,22 @@ router.addHandler(
             proxyUrl: await proxyConfiguration.newUrl(session?.id),
         });
 
-        const { pageInfo, questions } = parseSearchResult(JSON.parse(body));
+        let pageInfo: PageInfo;
+        let questions: QuestionInfo[];
+        try {
+            ({ pageInfo, questions } = parseSearchResult(
+                JSON.parse(body),
+                log
+            ));
+        } catch (e) {
+            log.debug(
+                `Failed to parse the following questions endpoint response: ${body}`
+            );
+            log.info(
+                "Failed to parse the response body for questions as a whole. Turn on DEBUG logs to see what the response was."
+            );
+            throw e;
+        }
 
         await Dataset.pushData(questions);
 
@@ -101,9 +117,22 @@ router.addHandler(
             proxyUrl: await proxyConfiguration.newUrl(session?.id),
         });
 
-        const { pageInfo, answers } = parseQuestionAnswersPage(
-            JSON.parse(body)
-        );
+        let pageInfo: PageInfo;
+        let answers: AnswerInfo[];
+        try {
+            ({ pageInfo, answers } = parseQuestionAnswersPage(
+                JSON.parse(body),
+                log
+            ));
+        } catch (e) {
+            log.debug(
+                `Failed to parse the following answers endpoint response: ${body}`
+            );
+            log.info(
+                "Failed to parse the response body for answers as a whole. Turn on DEBUG logs to see what the response was."
+            );
+            throw e;
+        }
         const { qid } = request.userData.initialPayload.variables;
         const key = `qid_${qid}_answers`;
         await mergePageData(key, answers);

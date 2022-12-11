@@ -33,10 +33,10 @@ const crawler = new BasicCrawler({
     requestHandler: router,
     useSessionPool: true,
     sessionPoolOptions: {
-        maxPoolSize: 1,
+        maxPoolSize: 10,
         sessionOptions: {
             maxAgeSecs: 9999999,
-            maxUsageCount: 9999999,
+            maxUsageCount: 100,
         },
     },
 });
