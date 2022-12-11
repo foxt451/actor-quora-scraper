@@ -36,7 +36,7 @@ router.use(async ({ session, log, crawler }) => {
     }
 });
 
-router.use(async ({ request, crawler }) => {
+router.use(async ({ request, crawler, log, session }) => {
     const crawlerState = await crawler.useState(defaultCrawlerState);
     if (request.userData.operationType !== undefined) {
         request.userData.initialPayload.extensions = {
@@ -51,6 +51,11 @@ router.use(async ({ request, crawler }) => {
     // like for the first request, when it's added to the queue first and only after are cookies and extension hashes
     // scraped (in the previous middleware)
     request.payload = JSON.stringify(request.userData.initialPayload);
+    log.debug(
+        `Headers of request ${request.id}: ${JSON.stringify(
+            session?.userData.headers
+        )}; payload: ${request.payload}`
+    );
 });
 
 router.addHandler(
