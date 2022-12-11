@@ -22,11 +22,16 @@ export const scrapeCookies = async (
     const response = await gotScraping({
         method: "GET",
         url: BASE_URL,
-        proxyUrl: await proxyConfiguration.newUrl(session.id),
+        proxyUrl:
+            proxyConfiguration && (await proxyConfiguration.newUrl(session.id)),
     } as OptionsOfTextResponseBody);
     session.setCookiesFromResponse(response);
     const headers: NecessaryHeaders = {
         "Content-Type": "application/json",
+        Host: "www.quora.com",
+        "Quora-Canary-Revision": false,
+        "Quora-Page-Creation-Time": new Date().getTime() * 1000,
+        Origin: "https://www.quora.com",
         ...scrapeHeaders(response.body),
     };
     session.userData.headers = headers;

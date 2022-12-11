@@ -56,10 +56,13 @@ router.use(async ({ request, crawler }) => {
 router.addHandler(
     QueryType.SEARCH,
     async ({ sendRequest, session, crawler, request, log }) => {
+        const proxyUrl =
+            proxyConfiguration &&
+            (await proxyConfiguration.newUrl(session?.id));
         const { body } = await sendRequest({
             headers: session?.userData.headers,
             // when using BasicCrawler, you have to attach proxy manually
-            proxyUrl: await proxyConfiguration.newUrl(session?.id),
+            proxyUrl,
         });
 
         let pageInfo: PageInfo;
@@ -74,7 +77,7 @@ router.addHandler(
                 `Failed to parse the following questions endpoint response: ${body}`
             );
             log.error(
-                "Failed to parse the response body for questions as a whole. Turn on DEBUG logs to see what the response was.",
+                "Failed to parse the response body for questions as a whole. Turn on DEBUG logs to see what the response was."
             );
             throw e;
         }
@@ -112,9 +115,10 @@ router.addHandler(
 router.addHandler(
     QueryType.QUESTION_ANSWERS,
     async ({ sendRequest, session, request, log, crawler }) => {
+        const proxyUrl = proxyConfiguration && await proxyConfiguration.newUrl(session?.id);
         const { body } = await sendRequest({
             headers: session?.userData.headers,
-            proxyUrl: await proxyConfiguration.newUrl(session?.id),
+            proxyUrl,
         });
 
         let pageInfo: PageInfo;
