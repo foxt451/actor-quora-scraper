@@ -14,7 +14,7 @@ export const scrapeCookies = async (
     log: Log,
     crawlerState: CrawlerState
 ): Promise<void> => {
-    log.info(
+    log.debug(
         `Attaching cookies and headers for current sesssion: ${session.id}...`
     );
     // you have to cast options to this type because typings of the library

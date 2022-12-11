@@ -18,5 +18,5 @@
             "editor": "proxy"
         }
     },
-    "required": ["query"]
+    "required": ["query", "proxy"]
 }

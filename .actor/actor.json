@@ -1,7 +1,60 @@
 {
-	"actorSpecification": 1,
-	"name": "actor-quora-scraper",
-	"version": "0.0",
-	"buildTag": "latest",
-	"environmentVariables": {}
+    "actorSpecification": 1,
+    "name": "actor-quora-scraper",
+    "version": "0.0",
+    "buildTag": "latest",
+    "environmentVariables": {},
+    "storages": {
+        "dataset": {
+            "actorSpecification": 1,
+            "views": {
+                "overview": {
+                    "title": "Overview",
+                    "transformation": {
+                        "fields": [
+                            "qid",
+                            "id",
+                            "url",
+                            "title",
+                            "originalTitle",
+                            "creationTime",
+                            "answerCount"
+                        ]
+                    },
+                    "display": {
+                        "component": "table",
+                        "properties": {
+                            "qid": {
+                                "label": "qid",
+                                "format": "text"
+                            },
+                            "id": {
+                                "format": "text"
+                            },
+                            "url": {
+                                "label": "Question's url",
+                                "format": "link"
+                            },
+                            "title": {
+                                "label": "Question's title",
+                                "format": "text"
+                            },
+                            "originalTitle": {
+                                "label": "Title with formatting",
+                                "format": "text"
+                            },
+                            "creationTime": {
+                                "label": "Creation time",
+                                "format": "date"
+                            },
+                            "answerCount": {
+                                "label": "Number of answers",
+                                "format": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
