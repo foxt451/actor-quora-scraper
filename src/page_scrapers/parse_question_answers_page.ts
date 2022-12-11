@@ -67,7 +67,7 @@ export const parseQuestionAnswersPage = (
             failedAnswersNum++;
         }
         if (failedAnswersNum > 0) {
-            log.info(
+            log.error(
                 `Failed to parse ${failedAnswersNum} answer(s). Turn on DEBUG logs to see what objects the crawler tried to extract info from, but couldn't.`
             );
         }

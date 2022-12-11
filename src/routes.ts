@@ -73,8 +73,8 @@ router.addHandler(
             log.debug(
                 `Failed to parse the following questions endpoint response: ${body}`
             );
-            log.info(
-                "Failed to parse the response body for questions as a whole. Turn on DEBUG logs to see what the response was."
+            log.error(
+                "Failed to parse the response body for questions as a whole. Turn on DEBUG logs to see what the response was.",
             );
             throw e;
         }
@@ -128,7 +128,7 @@ router.addHandler(
             log.debug(
                 `Failed to parse the following answers endpoint response: ${body}`
             );
-            log.info(
+            log.error(
                 "Failed to parse the response body for answers as a whole. Turn on DEBUG logs to see what the response was."
             );
             throw e;
