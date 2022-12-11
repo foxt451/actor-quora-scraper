@@ -5,7 +5,7 @@
  */
 
 // For more information, see https://sdk.apify.com
-import { Actor } from "apify";
+import { Actor, ProxyConfiguration } from "apify";
 // For more information, see https://crawlee.dev
 import { BasicCrawler } from "crawlee";
 import { PAGINATION_PARAMS } from "./constants/api.js";
@@ -24,7 +24,9 @@ if (!input) {
     throw new Error(ERROR_MESSAGES.INPUT_EMPTY);
 }
 
-const { query } = input;
+const { query, proxy } = input;
+
+export const proxyConfiguration = new ProxyConfiguration(proxy);
 
 const crawler = new BasicCrawler({
     requestHandler: router,

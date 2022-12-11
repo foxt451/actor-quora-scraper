@@ -10,3 +10,10 @@ For example, you can simply use it to quickly search for answers you are interes
 
 If you feel that this scraper is missing some functionality, feel free to contact support
 
+# Input
+
+Quora Scraper has some required input options. Click on the input tab for more information.
+
+# Output
+
+Quora Scraper will add questions to the default dataset. You can download the dataset in various formats such as JSON, HTML, CSV, or Excel. For each question, in the default Key-Value store there will be an entry with the key of this format: "qid_123456_answers".

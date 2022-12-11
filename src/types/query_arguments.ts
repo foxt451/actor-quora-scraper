@@ -12,7 +12,7 @@ export type QueryArguments = {
         disableSpellCheck: null;
     };
     [QueryType.QUESTION_ANSWERS]: {
-        qid: number;
+        qid: string | number;
         first: number;
         after: string;
         forceScoreVersion: "hide_relevant_answers";

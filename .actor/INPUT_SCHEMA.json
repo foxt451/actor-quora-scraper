@@ -9,7 +9,14 @@
             "type": "string",
             "description": "Quora will search for questions using this string.",
             "editor": "textfield"
+        },
+        "proxy": {
+            "title": "Proxy configuration",
+            "type": "object",
+            "description": "Select proxies to be used by your crawler.",
+            "prefill": { "useApifyProxy": true },
+            "editor": "proxy"
         }
     },
-    "required": ["query"]
+    "required": ["query", "proxy"]
 }

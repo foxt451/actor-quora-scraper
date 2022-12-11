@@ -3,6 +3,7 @@ import { PAGINATION_PARAMS } from "./constants/api.js";
 import { DEFAULT_QUERY_EXTENSIONS } from "./constants/extension_codes.js";
 import { constructGraphQLRequest } from "./helpers/api.js";
 import { mergePageData } from "./helpers/merge_page_data.js";
+import { proxyConfiguration } from "./main.js";
 import { parseQuestionAnswersPage } from "./page_scrapers/parse_question_answers_page.js";
 import { parseSearchResult } from "./page_scrapers/parse_search_result.js";
 import { scrapeCookies } from "./page_scrapers/scrape_cookies.js";
@@ -16,11 +17,11 @@ const defaultCrawlerState: CrawlerState = {
     extensionCodes: DEFAULT_QUERY_EXTENSIONS,
 };
 
-// this middleware gets various anti-scraping tokens and cookies for each session
-// additionaly, it grabs extension hash for Search query so as not to make
+// this middleware gets various anti-scraping tokens and cookies for each session;
+// additionaly, it grabs extension hash for persisted queries so as not to make
 // additional requests to homepage later
 
-// avoid race condition by making other session requests wait for the first request that went to scrape cookies
+// this map is to avoid race condition by making other session requests wait for the first request that went to scrape cookies;
 // this avoids concurrent session requests hitting home page to scrape cookies multiple times
 const scrapeCookiesPromiseMap: Map<string, Promise<void>> = new Map();
 router.use(async ({ session, log, crawler }) => {
@@ -43,15 +44,12 @@ router.use(async ({ request, crawler }) => {
             ].hash,
         };
     }
+    // only form actual request payload before executing request, not when adding it to the queue;
+    // this is because a request might stay in the queue for some time, during which the extension hash
+    // for this graphQL operation has changed;
+    // like for the first request, when it's added to the queue first and only after are cookies and extension hashes
+    // scraped (in the previous middleware)
     request.payload = JSON.stringify(request.userData.initialPayload);
-});
-
-router.addDefaultHandler(async ({ log, request, sendRequest }) => {
-    const { url } = request;
-    log.info(`Processing ${url}... Default handler`);
-
-    const { body } = await sendRequest();
-    log.info(body);
 });
 
 router.addHandler(
@@ -59,6 +57,8 @@ router.addHandler(
     async ({ sendRequest, session, crawler, request, log }) => {
         const { body } = await sendRequest({
             headers: session?.userData.headers,
+            // when using BasicCrawler, you have to attach proxy manually
+            proxyUrl: await proxyConfiguration.newUrl(session?.id),
         });
 
         const { pageInfo, questions } = parseSearchResult(JSON.parse(body));
@@ -98,13 +98,14 @@ router.addHandler(
     async ({ sendRequest, session, request, log, crawler }) => {
         const { body } = await sendRequest({
             headers: session?.userData.headers,
+            proxyUrl: await proxyConfiguration.newUrl(session?.id),
         });
 
         const { pageInfo, answers } = parseQuestionAnswersPage(
             JSON.parse(body)
         );
         const { qid } = request.userData.initialPayload.variables;
-        const key = `qid_${qid}_answers.json`;
+        const key = `qid_${qid}_answers`;
         await mergePageData(key, answers);
         log.info(
             `Scraped ${answers.length} answers from a question with qid: ${qid}. Saved to KeyValueStore with key: ${key}`
