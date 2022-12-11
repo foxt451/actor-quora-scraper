@@ -55,7 +55,7 @@ router.use(async ({ request, crawler }) => {
 
 router.addHandler(
     QueryType.SEARCH,
-    async ({ sendRequest, session, crawler, request, log }) => {
+    async ({ sendRequest, session, crawler, request, log, proxyInfo }) => {
         const proxyUrl =
             proxyConfiguration &&
             (await proxyConfiguration.newUrl(session?.id));
@@ -76,7 +76,7 @@ router.addHandler(
             log.debug(
                 `Failed to parse the following questions endpoint response: ${body}. The response code and headers: ${statusCode}; ${JSON.stringify(
                     headers
-                )}}`
+                )}. Proxy used: ${proxyInfo?.url}`
             );
             log.error(
                 "Failed to parse the response body for questions as a whole. Turn on DEBUG logs to see what the response was."
@@ -116,11 +116,11 @@ router.addHandler(
 
 router.addHandler(
     QueryType.QUESTION_ANSWERS,
-    async ({ sendRequest, session, request, log, crawler }) => {
+    async ({ sendRequest, session, request, log, crawler, proxyInfo }) => {
         const proxyUrl =
             proxyConfiguration &&
             (await proxyConfiguration.newUrl(session?.id));
-        const { body } = await sendRequest({
+        const { body, statusCode, headers } = await sendRequest({
             headers: session?.userData.headers,
             proxyUrl,
         });
@@ -134,7 +134,9 @@ router.addHandler(
             ));
         } catch (e) {
             log.debug(
-                `Failed to parse the following answers endpoint response: ${body}`
+                `Failed to parse the following answers endpoint response: ${body}. The response code and headers: ${statusCode}; ${JSON.stringify(
+                    headers
+                )}. Proxy used: ${proxyInfo?.url}`
             );
             log.error(
                 "Failed to parse the response body for answers as a whole. Turn on DEBUG logs to see what the response was."
