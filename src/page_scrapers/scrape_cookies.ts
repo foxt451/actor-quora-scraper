@@ -29,8 +29,6 @@ export const scrapeCookies = async (
     const headers: NecessaryHeaders = {
         "Content-Type": "application/json",
         Host: "www.quora.com",
-        "Quora-Canary-Revision": false,
-        "Quora-Page-Creation-Time": new Date().getTime() * 1000,
         Origin: "https://www.quora.com",
         ...scrapeHeaders(response.body),
     };
