@@ -1,8 +1,7 @@
 import { createBasicRouter, Dataset } from "crawlee";
 import { PAGINATION_PARAMS } from "./constants/api.js";
 import { DEFAULT_QUERY_EXTENSIONS } from "./constants/extension_codes.js";
-import { constructGraphQLRequest } from "./helpers/api.js";
-import { mergePageData } from "./helpers/merge_page_data.js";
+import { constructGraphQLRequest, mergePageData } from "./helpers/index.js";
 import { proxyConfiguration } from "./main.js";
 import { parseQuestionAnswersPage } from "./page_scrapers/parse_question_answers_page.js";
 import { parseSearchResult } from "./page_scrapers/parse_search_result.js";
@@ -86,7 +85,7 @@ router.addHandler(
                     headers
                 )}. Proxy used: ${proxyUrl}`
             );
-            log.error(
+            log.warning(
                 "Failed to parse the response body for questions as a whole. Turn on DEBUG logs to see what the response was."
             );
             throw e;
@@ -149,7 +148,7 @@ router.addHandler(
                     headers
                 )}. Proxy used: ${proxyInfo?.url}`
             );
-            log.error(
+            log.warning(
                 "Failed to parse the response body for answers as a whole. Turn on DEBUG logs to see what the response was."
             );
             throw e;

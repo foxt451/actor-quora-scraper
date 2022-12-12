@@ -10,7 +10,7 @@ import { Actor } from "apify";
 import { BasicCrawler } from "crawlee";
 import { PAGINATION_PARAMS } from "./constants/api.js";
 import { ERROR_MESSAGES } from "./constants/error_messages.js";
-import { constructGraphQLRequest } from "./helpers/api.js";
+import { constructGraphQLRequest } from "./helpers";
 import { router } from "./routes.js";
 import { Input } from "./types/input.js";
 import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
@@ -30,11 +30,21 @@ export const proxyConfiguration = await Actor.createProxyConfiguration(proxy);
 
 const crawler = new BasicCrawler({
     requestHandler: router,
+    // use multiple sessions to enable quick concurrent scraping
+    // without getting noticed by Quora's rate limiting
     useSessionPool: true,
     sessionPoolOptions: {
+        // the following options are those that have been tested multiple times to work;
+        // if this actor gets traction, you might enable their customization;
+
+        // several sessions have proved to be enough
+        // too few sessions might slow down the crawl or fall under rate limiting
         maxPoolSize: 10,
         sessionOptions: {
+            // a single session is able to last indefinitely without getting blocked
             maxAgeSecs: 9999999,
+            // just as a precaution, however, let's change a session after 100 requests so as not to
+            // arouse suspicion
             maxUsageCount: 100,
         },
     },
