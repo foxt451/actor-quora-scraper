@@ -1,0 +1,22 @@
+{
+    "title": "Quora Scraper input schema",
+    "description": "This is actor input schema for Quora Scraper, it lets you provide search term for your run.",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "query": {
+            "title": "Search term",
+            "type": "string",
+            "description": "Quora will search for questions using this string.",
+            "editor": "textfield"
+        },
+        "proxy": {
+            "title": "Proxy configuration",
+            "type": "object",
+            "description": "Select proxies to be used by your crawler. NOTE: residential proxies may not work with this scraper",
+            "prefill": { "useApifyProxy": true },
+            "editor": "proxy"
+        }
+    },
+    "required": ["query", "proxy"]
+}
