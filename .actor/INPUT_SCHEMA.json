@@ -13,7 +13,7 @@
         "proxy": {
             "title": "Proxy configuration",
             "type": "object",
-            "description": "Select proxies to be used by your crawler.",
+            "description": "Select proxies to be used by your crawler. NOTE: residential proxies may not work with this scraper",
             "prefill": { "useApifyProxy": true },
             "editor": "proxy"
         }
