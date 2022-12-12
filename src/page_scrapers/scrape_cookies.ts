@@ -56,4 +56,11 @@ export const scrapeCookies = async (
     log.info(
         `Attached cookies and headers for current sesssion: ${session.id}`
     );
+    log.debug(
+        `Attached cookies are: ${session.getCookieString(
+            BASE_URL
+        )}. Attached headers are: ${JSON.stringify(
+            headers
+        )}. Current hashes are: ${JSON.stringify(crawlerState.extensionCodes)}`
+    );
 };
