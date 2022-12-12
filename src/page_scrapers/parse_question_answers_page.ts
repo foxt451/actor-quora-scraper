@@ -1,5 +1,5 @@
 import { Log } from "apify";
-import { combineUrl, parseJsonContent, unixToDateIso } from "../helpers";
+import { combineUrl, parseJsonContent, unixToDateIso } from "../helpers/index.js";
 import { AnswerInfo, PageInfo } from "../types/parser_results.js";
 
 // endpoint for question answers returns some other entities, so it's needed to filter by typename

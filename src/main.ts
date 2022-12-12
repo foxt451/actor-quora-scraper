@@ -10,7 +10,7 @@ import { Actor } from "apify";
 import { BasicCrawler } from "crawlee";
 import { PAGINATION_PARAMS } from "./constants/api.js";
 import { ERROR_MESSAGES } from "./constants/error_messages.js";
-import { constructGraphQLRequest } from "./helpers";
+import { constructGraphQLRequest } from "./helpers/index.js";
 import { router } from "./routes.js";
 import { Input } from "./types/input.js";
 import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
