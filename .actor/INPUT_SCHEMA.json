@@ -8,7 +8,8 @@
             "title": "Search term",
             "type": "string",
             "description": "Quora will search for questions using this string.",
-            "editor": "textfield"
+            "editor": "textfield",
+            "prefill": "What is the best way to learn to code?"
         },
         "proxy": {
             "title": "Proxy configuration",
