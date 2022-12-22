@@ -27,7 +27,6 @@ class AnswersStore {
             await Actor.setValue(key, state.answers);
             state.modified = false;
         }
-        console.log(this.answers);
         log.info(`Persisted ${stored} questions' answers.`);
     }
 
