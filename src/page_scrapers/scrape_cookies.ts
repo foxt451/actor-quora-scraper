@@ -2,7 +2,6 @@ import { Log } from "apify";
 import { Session } from "crawlee";
 import { gotScraping, OptionsOfTextResponseBody } from "got-scraping";
 import { BASE_URL } from "../constants/api.js";
-import { proxyConfiguration } from "../main.js";
 import { CrawlerState } from "../types/crawler_state.js";
 import { NecessaryHeaders } from "../types/header_collection.js";
 import { QueryType } from "../types/query_types.js";
@@ -14,6 +13,7 @@ export const scrapeCookies = async (
     log: Log,
     crawlerState: CrawlerState
 ): Promise<void> => {
+    const { proxyUrl } = session.userData;
     log.debug(
         `Attaching cookies and headers for current sesssion: ${session.id}...`
     );
@@ -22,8 +22,7 @@ export const scrapeCookies = async (
     const response = await gotScraping({
         method: "GET",
         url: BASE_URL,
-        proxyUrl:
-            proxyConfiguration && (await proxyConfiguration.newUrl(session.id)),
+        proxyUrl,
     } as OptionsOfTextResponseBody);
     session.setCookiesFromResponse(response);
     const headers: NecessaryHeaders = {

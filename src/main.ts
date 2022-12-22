@@ -1,17 +1,10 @@
-/**
- * This template is a production ready boilerplate for developing with `CheerioCrawler`.
- * Use this to bootstrap your projects using the most up-to-date code.
- * If you're looking for examples or want to learn more, see README.
- */
-
-// For more information, see https://sdk.apify.com
 import { Actor } from "apify";
-// For more information, see https://crawlee.dev
 import { BasicCrawler } from "crawlee";
 import { PAGINATION_PARAMS } from "./constants/api.js";
 import { ERROR_MESSAGES } from "./constants/error_messages.js";
 import { constructGraphQLRequest } from "./helpers/index.js";
 import { router } from "./routes.js";
+import { answerStore } from "./stores/answers_store.js";
 import { Input } from "./types/input.js";
 import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
 import { QueryType } from "./types/query_types.js";
@@ -24,7 +17,7 @@ if (!input) {
     throw new Error(ERROR_MESSAGES.INPUT_EMPTY);
 }
 
-const { query, proxy } = input;
+const { query, proxy, sessions } = input;
 
 export const proxyConfiguration = await Actor.createProxyConfiguration(proxy);
 
@@ -39,16 +32,18 @@ const crawler = new BasicCrawler({
 
         // several sessions have proved to be enough
         // too few sessions might slow down the crawl or fall under rate limiting
-        maxPoolSize: 10,
+        maxPoolSize: sessions?.maxPoolSize,
         sessionOptions: {
             // a single session is able to last indefinitely without getting blocked
-            maxAgeSecs: 9999999,
+            maxAgeSecs: sessions?.maxAgeSecs,
             // just as a precaution, however, let's change a session after 100 requests so as not to
             // arouse suspicion
-            maxUsageCount: 100,
+            maxUsageCount: sessions?.maxUsageCount ?? 200,
         },
     },
 });
+
+await answerStore.initialize();
 
 await crawler.run([
     constructGraphQLRequest(QueryType.SEARCH, {

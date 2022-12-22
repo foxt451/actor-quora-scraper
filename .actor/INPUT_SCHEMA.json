@@ -17,6 +17,36 @@
             "description": "Select proxies to be used by your crawler. NOTE: residential proxies may not work with this scraper",
             "prefill": { "useApifyProxy": true },
             "editor": "proxy"
+        },
+        "sessions": {
+            "title": "Session pool configuration",
+            "type": "object",
+            "description": "Select session pool configuration to adjust speed/stealthiness of the scraper",
+            "properties": {
+                "maxPoolSize": {
+                    "title": "Max pool size",
+                    "type": "number",
+                    "description": "Maximum number of sessions in the pool",
+                    "editor": "number"
+                },
+                "maxAgeSecs": {
+                    "title": "Max age of each session",
+                    "type": "number",
+                    "description": "Maximum age of sessions in the pool",
+                    "editor": "number"
+                },
+                "maxUsageCount": {
+                    "title": "Max usage count of each session",
+                    "type": "number",
+                    "description": "Maximum number of times a session can be used",
+                    "editor": "number"
+                }
+            },
+            "prefill": {
+                "maxPoolSize": 1000,
+                "maxAgeSecs": 999999,
+                "maxUsageCount": 2000
+            }
         }
     },
     "required": ["query", "proxy"]

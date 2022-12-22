@@ -1,5 +1,3 @@
-*NOTE: This scraper will likely not work with residential proxies. You should select Apify's automatic proxy (or any other proxy as long as you tested it).*
-
 # What does Quora Scraper do?
 
 Quora Scraper lets you scrape questions found with [Quora's](https://www.quora.com/) search and answers for each of them. The result will include basic information for each question and answer, including their contents, urls etc. You can use this scraper as an unofficial Quora API.

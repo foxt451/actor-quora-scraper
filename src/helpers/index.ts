@@ -1,4 +1,3 @@
-import { Actor } from "apify";
 import { RequestOptions } from "crawlee";
 import { BASE_URL } from "../constants/api.js";
 import { QueryArguments } from "../types/query_arguments.js";
@@ -45,13 +44,38 @@ export const unixToDateIso = (timestamp: number, divider = 1000): string => {
     return new Date(timestamp / divider).toISOString();
 };
 
-// helps merge new page data into previous pages already stored in KVStore
-export const mergePageData = async (key: string, newData: unknown[]) => {
-    const prevData = await Actor.getValue<unknown[]>(key);
-    if (prevData) {
-        newData = [...prevData, newData];
+export const removeDuplicatesByProperty = <
+    T extends { [k in K]: string | number | symbol },
+    K extends keyof T
+>(
+    objects: T[],
+    key: K
+): T[] => {
+    const uniqueObjects = objects.reduce((acc, obj) => {
+        if (!acc[obj[key]]) {
+            acc[obj[key]] = obj;
+        }
+        return acc;
+    }, {} as { [key in T[K]]: T });
+
+    return Object.values(uniqueObjects);
+};
+
+export const constructAnswersKVKey = (qid: string): string => {
+    return `qid_${qid}_answers`;
+};
+
+export const isAnswersKVKey = (
+    key: string
+): { is: false; qid: null } | { is: true; qid: string } => {
+    if (key.startsWith("qid_") && key.endsWith("_answers")) {
+        return {
+            is: true,
+            qid: key.replace("qid_", "").replace("_answers", ""),
+        };
     }
-    // WARNING: in case of many pages, there will be a lot of API calls to the KVStore
-    // idea: use in-memory data structure to store answers and only persist it to the store on persistence events
-    await Actor.setValue(key, newData);
+    return {
+        is: false,
+        qid: null,
+    };
 };

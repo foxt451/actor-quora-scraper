@@ -1,11 +1,15 @@
 import { createBasicRouter, Dataset } from "crawlee";
 import { PAGINATION_PARAMS } from "./constants/api.js";
 import { DEFAULT_QUERY_EXTENSIONS } from "./constants/extension_codes.js";
-import { constructGraphQLRequest, mergePageData } from "./helpers/index.js";
+import {
+    constructAnswersKVKey,
+    constructGraphQLRequest,
+} from "./helpers/index.js";
 import { proxyConfiguration } from "./main.js";
 import { parseQuestionAnswersPage } from "./page_scrapers/parse_question_answers_page.js";
 import { parseSearchResult } from "./page_scrapers/parse_search_result.js";
 import { scrapeCookies } from "./page_scrapers/scrape_cookies.js";
+import { answerStore } from "./stores/answers_store.js";
 import { CrawlerState } from "./types/crawler_state.js";
 import { AnswerInfo, PageInfo, QuestionInfo } from "./types/parser_results.js";
 import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
@@ -16,6 +20,19 @@ export const router = createBasicRouter();
 const defaultCrawlerState: CrawlerState = {
     extensionCodes: DEFAULT_QUERY_EXTENSIONS,
 };
+
+// attach proxy url to each session
+router.use(async ({ session, log }) => {
+    if (session && !session.userData.isProxySet) {
+        session.userData.proxyUrl =
+            proxyConfiguration &&
+            (await proxyConfiguration.newUrl(session.id));
+        log.debug(
+            `Selected ${session.userData.proxyUrl} as proxy url for session with id: ${session.id}`
+        );
+        session.userData.isProxySet = true;
+    }
+});
 
 // this middleware gets various anti-scraping tokens and cookies for each session;
 // additionaly, it grabs extension hash for persisted queries so as not to make
@@ -60,12 +77,8 @@ router.use(async ({ request, crawler, log, session }) => {
 router.addHandler(
     QueryType.SEARCH,
     async ({ sendRequest, session, crawler, request, log }) => {
-        const proxyUrl =
-            proxyConfiguration &&
-            (await proxyConfiguration.newUrl(session?.id));
-        log.debug(
-            `Selected ${proxyUrl} as proxy url for request id: ${request.id}`
-        );
+        const proxyUrl = session?.userData.proxyUrl;
+
         const { body, statusCode, headers } = await sendRequest({
             headers: session?.userData.headers,
             // when using BasicCrawler, you have to attach proxy manually
@@ -124,12 +137,7 @@ router.addHandler(
 router.addHandler(
     QueryType.QUESTION_ANSWERS,
     async ({ sendRequest, session, request, log, crawler, proxyInfo }) => {
-        const proxyUrl =
-            proxyConfiguration &&
-            (await proxyConfiguration.newUrl(session?.id));
-        log.debug(
-            `Selected ${proxyUrl} as proxy url for request id: ${request.id}`
-        );
+        const proxyUrl = session?.userData.proxyUrl;
         const { body, statusCode, headers } = await sendRequest({
             headers: session?.userData.headers,
             proxyUrl,
@@ -154,10 +162,13 @@ router.addHandler(
             throw e;
         }
         const { qid } = request.userData.initialPayload.variables;
-        const key = `qid_${qid}_answers`;
-        await mergePageData(key, answers);
+        answerStore.addAnswers(answers, qid);
         log.info(
-            `Scraped ${answers.length} answers from a question with qid: ${qid}. Saved to KeyValueStore with key: ${key}`
+            `Scraped ${
+                answers.length
+            } answers from a question with qid: ${qid}. Saved to KeyValueStore with key: ${constructAnswersKVKey(
+                qid
+            )}`
         );
         if (pageInfo.hasNextPage) {
             await crawler.addRequests([
