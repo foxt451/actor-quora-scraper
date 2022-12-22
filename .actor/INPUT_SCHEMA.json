@@ -46,7 +46,8 @@
                 "maxPoolSize": 1000,
                 "maxAgeSecs": 999999,
                 "maxUsageCount": 2000
-            }
+            },
+            "editor": "json"
         }
     },
     "required": ["query", "proxy"]
