@@ -22,13 +22,15 @@
             "title": "Max pool size",
             "type": "integer",
             "description": "Maximum number of sessions in the pool",
-            "editor": "number"
+            "editor": "number",
+            "default": 10
         },
         "maxAgeSecs": {
             "title": "Max age of each session",
             "type": "integer",
             "description": "Maximum age of sessions in the pool",
-            "editor": "number"
+            "editor": "number",
+            "default": 999999999
         },
         "maxUsageCount": {
             "title": "Max usage count of each session",

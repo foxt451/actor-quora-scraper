@@ -1,4 +1,4 @@
-import { Actor } from "apify";
+import { Actor, log } from "apify";
 import {
     constructAnswersKVKey,
     isAnswersKVKey,
@@ -17,15 +17,18 @@ class AnswersStore {
     }
 
     async persist() {
+        let stored = 0;
         for (const [qid, state] of this.answers.entries()) {
             if (!state.modified) {
                 continue;
             }
             const key = constructAnswersKVKey(qid);
-
+            stored++;
             await Actor.setValue(key, state.answers);
             state.modified = false;
         }
+        console.log(this.answers);
+        log.info(`Persisted ${stored} questions' answers.`);
     }
 
     async initialize() {
