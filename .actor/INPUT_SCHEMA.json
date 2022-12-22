@@ -20,21 +20,21 @@
         },
         "maxPoolSize": {
             "title": "Max pool size",
-            "type": "number",
+            "type": "integer",
             "description": "Maximum number of sessions in the pool",
-            "editor": "integer"
+            "editor": "number"
         },
         "maxAgeSecs": {
             "title": "Max age of each session",
-            "type": "number",
+            "type": "integer",
             "description": "Maximum age of sessions in the pool",
-            "editor": "integer"
+            "editor": "number"
         },
         "maxUsageCount": {
             "title": "Max usage count of each session",
-            "type": "number",
+            "type": "integer",
             "description": "Maximum number of times a session can be used",
-            "editor": "integer",
+            "editor": "number",
             "default": 200
         }
     },
