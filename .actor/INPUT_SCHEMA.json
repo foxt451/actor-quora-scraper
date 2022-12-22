@@ -40,5 +40,5 @@
             "default": 200
         }
     },
-    "required": ["query", "proxy"]
+    "required": ["query"]
 }

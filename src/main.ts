@@ -19,7 +19,9 @@ if (!input) {
 
 const { query, proxy, maxAgeSecs, maxPoolSize, maxUsageCount } = input;
 
-export const proxyConfiguration = await Actor.createProxyConfiguration(proxy);
+export const proxyConfiguration = await Actor.createProxyConfiguration(proxy ?? {
+    useApifyProxy: false
+});
 
 const crawler = new BasicCrawler({
     requestHandler: router,
