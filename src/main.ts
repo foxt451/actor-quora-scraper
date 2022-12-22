@@ -17,7 +17,7 @@ if (!input) {
     throw new Error(ERROR_MESSAGES.INPUT_EMPTY);
 }
 
-const { query, proxy, sessions } = input;
+const { query, proxy, maxAgeSecs, maxPoolSize, maxUsageCount } = input;
 
 export const proxyConfiguration = await Actor.createProxyConfiguration(proxy);
 
@@ -32,13 +32,13 @@ const crawler = new BasicCrawler({
 
         // several sessions have proved to be enough
         // too few sessions might slow down the crawl or fall under rate limiting
-        maxPoolSize: sessions?.maxPoolSize,
+        maxPoolSize,
         sessionOptions: {
             // a single session is able to last indefinitely without getting blocked
-            maxAgeSecs: sessions?.maxAgeSecs,
+            maxAgeSecs,
             // just as a precaution, however, let's change a session after 100 requests so as not to
             // arouse suspicion
-            maxUsageCount: sessions?.maxUsageCount ?? 200,
+            maxUsageCount,
         },
     },
 });
