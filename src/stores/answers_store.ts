@@ -10,12 +10,6 @@ class AnswersStore {
     private answers: Map<string, { modified: boolean; answers: AnswerInfo[] }> =
         new Map();
 
-    constructor() {
-        Actor.on("persistState", async () => {
-            await this.persist();
-        });
-    }
-
     async persist() {
         let stored = 0;
         for (const [qid, state] of this.answers.entries()) {
@@ -41,6 +35,10 @@ class AnswersStore {
                     answers: (await defKV.getValue(key)) ?? [],
                 });
             }
+        });
+
+        Actor.on("persistState", async () => {
+            await this.persist();
         });
     }
 
