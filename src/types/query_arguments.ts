@@ -4,7 +4,7 @@ export type QueryArguments = {
     [QueryType.SEARCH]: {
         query: string;
         first: number;
-        after: string;
+        after: string | null;
         tribeId: null;
         time: "all_times";
         author: null;
@@ -14,10 +14,28 @@ export type QueryArguments = {
     [QueryType.QUESTION_ANSWERS]: {
         qid: string | number;
         first: number;
-        after: string;
-        forceScoreVersion: "hide_relevant_answers";
+        after: string | null;
+        forceScoreVersion: string;
     };
 };
+
+export type AdditionalUserData = {
+    [QueryType.SEARCH]: {
+        maxAnswersPerQuestion: number;
+        answersBatchSize: number;
+        answersRanking: AnswersRanking;
+    };
+    [QueryType.QUESTION_ANSWERS]: {
+        maxAnswersPerQuestion: number;
+        answersBatchSize: number;
+        answersRanking: AnswersRanking;
+    };
+};
+
+export type AnswersRanking =
+    | "hide_relevant_answers"
+    | "ranking_toggle_upvote"
+    | "ranking_toggle_recency";
 
 export const nonConfigurableQueryArguments = {
     [QueryType.SEARCH]: {
@@ -27,7 +45,5 @@ export const nonConfigurableQueryArguments = {
         resultType: "question",
         disableSpellCheck: null,
     },
-    [QueryType.QUESTION_ANSWERS]: {
-        forceScoreVersion: "hide_relevant_answers",
-    },
+    [QueryType.QUESTION_ANSWERS]: {},
 } as const;

@@ -11,6 +11,29 @@
             "editor": "textfield",
             "prefill": "What is the best way to learn to code?"
         },
+        "answersBatchSize": {
+            "title": "Answers batch size",
+            "type": "integer",
+            "description": "Crawler will fetch answers for a particular question in batches of this size. It uses a sane default, but increasing it too much, although will decrease the number of API hits, might introduce problems in an unexpected way. If this paramter is higher than maxAnswersPerQuestion, the questions scraped with last batch will be persisted, even if they overcome that limit.",
+            "editor": "number",
+            "default": 100
+        },
+        "maxAnswersPerQuestion": {
+            "title": "Max answers per question",
+            "type": "integer",
+            "description": "Depending on popularity of your query you may encounter questions with many thousands of answers. Scraping these will require a ton of requests, especially if there are many such questions. Set to 0 to avoid scraping questions altogether and to -1 to disable this limit",
+            "editor": "number",
+            "default": 100
+        },
+        "answersRanking": {
+            "title": "Answers ranking",
+            "type": "string",
+            "description": "Sort answers by selected parameter. On original Quora website you can also include related answers with this option, but currently this isn't supported.",
+            "editor": "select",
+            "enum": ["hide_relevant_answers", "ranking_toggle_upvote", "ranking_toggle_recency"],
+            "enumTitles": ["Automatic by Quora", "Sort by upvotes", "Sort by recency"],
+            "default": "ranking_toggle_upvote"
+        },
         "proxy": {
             "title": "Proxy configuration",
             "type": "object",

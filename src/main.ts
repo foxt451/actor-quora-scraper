@@ -17,11 +17,22 @@ if (!input) {
     throw new Error(ERROR_MESSAGES.INPUT_EMPTY);
 }
 
-const { query, proxy, maxAgeSecs, maxPoolSize, maxUsageCount } = input;
+const {
+    query,
+    proxy,
+    maxAgeSecs,
+    maxPoolSize,
+    maxUsageCount,
+    answersBatchSize,
+    maxAnswersPerQuestion,
+    answersRanking,
+} = input;
 
-export const proxyConfiguration = await Actor.createProxyConfiguration(proxy ?? {
-    useApifyProxy: false
-});
+export const proxyConfiguration = await Actor.createProxyConfiguration(
+    proxy ?? {
+        useApifyProxy: false,
+    }
+);
 
 const crawler = new BasicCrawler({
     requestHandler: router,
@@ -48,12 +59,21 @@ const crawler = new BasicCrawler({
 await answerStore.initialize();
 
 await crawler.run([
-    constructGraphQLRequest(QueryType.SEARCH, {
-        after: "0",
-        first: PAGINATION_PARAMS.PAGINATION_BATCH,
-        query,
-        ...nonConfigurableQueryArguments[QueryType.SEARCH],
-    }),
+    constructGraphQLRequest(
+        QueryType.SEARCH,
+        {
+            after: null,
+            first: PAGINATION_PARAMS.PAGINATION_BATCH,
+            query,
+            ...nonConfigurableQueryArguments[QueryType.SEARCH],
+        },
+        {
+            maxAnswersPerQuestion: maxAnswersPerQuestion ?? -1,
+            answersBatchSize:
+                answersBatchSize ?? PAGINATION_PARAMS.PAGINATION_BATCH,
+            answersRanking: answersRanking ?? "hide_relevant_answers",
+        }
+    ),
 ]);
 
 // Exit successfully
