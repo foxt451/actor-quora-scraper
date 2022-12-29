@@ -11,13 +11,6 @@
             "editor": "textfield",
             "prefill": "What is the best way to learn to code?"
         },
-        "answersBatchSize": {
-            "title": "Answers batch size",
-            "type": "integer",
-            "description": "Crawler will fetch answers for a particular question in batches of this size. It uses a sane default, but increasing it too much, although will decrease the number of API hits, might introduce problems in an unexpected way. If this paramter is higher than maxAnswersPerQuestion, the questions scraped with last batch will be persisted, even if they overcome that limit.",
-            "editor": "number",
-            "default": 100
-        },
         "maxAnswersPerQuestion": {
             "title": "Max answers per question",
             "type": "integer",

@@ -23,7 +23,6 @@ const {
     maxAgeSecs,
     maxPoolSize,
     maxUsageCount,
-    answersBatchSize,
     maxAnswersPerQuestion,
     answersRanking,
 } = input;
@@ -69,8 +68,7 @@ await crawler.run([
         },
         {
             maxAnswersPerQuestion: maxAnswersPerQuestion ?? -1,
-            answersBatchSize:
-                answersBatchSize ?? PAGINATION_PARAMS.PAGINATION_BATCH,
+            answersBatchSize: PAGINATION_PARAMS.PAGINATION_BATCH,
             answersRanking: answersRanking ?? "hide_relevant_answers",
         }
     ),
