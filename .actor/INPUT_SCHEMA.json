@@ -9,7 +9,7 @@
             "type": "array",
             "description": "Quora will search for questions using this strings.",
             "editor": "stringList",
-            "prefill": ["What is the best way to learn to code?"]
+            "prefill": ["how to drink yogurt"]
         },
         "maxAnswersPerQuestion": {
             "title": "Max answers per question",
