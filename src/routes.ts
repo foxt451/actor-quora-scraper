@@ -20,6 +20,7 @@ export const router = createBasicRouter();
 
 const defaultCrawlerState: CrawlerState = {
     extensionCodes: DEFAULT_QUERY_EXTENSIONS,
+    qids: new Set(),
 };
 
 // attach proxy url to each session
@@ -104,11 +105,18 @@ router.addHandler<UserData<QueryType.SEARCH>>(
             throw e;
         }
 
-        await Dataset.pushData(questions);
+        const crawlerState = await crawler.useState(defaultCrawlerState);
+        const dedupedQuestions = questions.filter(
+            (question) => !crawlerState.qids.has(question.qid)
+        );
+        dedupedQuestions.forEach((question) =>
+            crawlerState.qids.add(question.qid)
+        );
+        await Dataset.pushData(dedupedQuestions);
 
-        log.info(`Scraped ${questions.length} questions from search`);
+        log.info(`Scraped ${dedupedQuestions.length} questions from search`);
         if (request.userData.additional.maxAnswersPerQuestion !== 0) {
-            for (const question of questions) {
+            for (const question of dedupedQuestions) {
                 await crawler.addRequests([
                     constructGraphQLRequest(
                         QueryType.QUESTION_ANSWERS,
@@ -202,6 +210,7 @@ router.addHandler<UserData<QueryType.QUESTION_ANSWERS>>(
                 answerStore.getCountFor(qid.toString()) <
                     request.userData.additional.maxAnswersPerQuestion)
         ) {
+            log.debug(`Scraping more answers for question with qid: ${qid}`);
             await crawler.addRequests([
                 constructGraphQLRequest(
                     QueryType.QUESTION_ANSWERS,

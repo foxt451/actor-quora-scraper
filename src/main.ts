@@ -18,11 +18,11 @@ if (!input) {
 }
 
 const {
-    query,
+    queries,
     proxy,
-    maxAgeSecs,
-    maxPoolSize,
-    maxUsageCount,
+    maxAgeSecs = 999999999,
+    maxPoolSize = 10,
+    maxUsageCount = 200,
     maxAnswersPerQuestion,
     answersRanking,
 } = input;
@@ -57,22 +57,24 @@ const crawler = new BasicCrawler({
 
 await answerStore.initialize();
 
-await crawler.run([
-    constructGraphQLRequest(
-        QueryType.SEARCH,
-        {
-            after: null,
-            first: PAGINATION_PARAMS.PAGINATION_BATCH,
-            query,
-            ...nonConfigurableQueryArguments[QueryType.SEARCH],
-        },
-        {
-            maxAnswersPerQuestion: maxAnswersPerQuestion ?? -1,
-            answersBatchSize: PAGINATION_PARAMS.PAGINATION_BATCH,
-            answersRanking: answersRanking ?? "hide_relevant_answers",
-        }
-    ),
-]);
+await crawler.run(
+    queries.map((query) =>
+        constructGraphQLRequest(
+            QueryType.SEARCH,
+            {
+                after: null,
+                first: PAGINATION_PARAMS.PAGINATION_BATCH,
+                query,
+                ...nonConfigurableQueryArguments[QueryType.SEARCH],
+            },
+            {
+                maxAnswersPerQuestion: maxAnswersPerQuestion ?? -1,
+                answersBatchSize: PAGINATION_PARAMS.PAGINATION_BATCH,
+                answersRanking: answersRanking ?? "hide_relevant_answers",
+            }
+        )
+    )
+);
 
 // Exit successfully
 await Actor.exit();

@@ -2,7 +2,7 @@ import { ProxyConfigurationOptions } from "apify";
 import { AnswersRanking } from "./query_arguments";
 
 export type Input = {
-    query: string;
+    queries: string[];
     proxy?: ProxyConfigurationOptions & {
         useApifyProxy?: boolean;
     };
