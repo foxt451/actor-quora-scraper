@@ -56,5 +56,5 @@
             "default": 200
         }
     },
-    "required": ["query"]
+    "required": ["queries"]
 }
