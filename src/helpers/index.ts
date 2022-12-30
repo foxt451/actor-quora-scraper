@@ -1,11 +1,18 @@
 import { RequestOptions } from "crawlee";
 import { BASE_URL } from "../constants/api.js";
-import { QueryArguments } from "../types/query_arguments.js";
+import {
+    AdditionalUserData,
+    QueryArguments,
+} from "../types/query_arguments.js";
 import { QueryType } from "../types/query_types.js";
 
 export const constructGraphQLRequest = <T extends QueryType>(
     queryType: T,
-    queryArgs: QueryArguments[T]
+    queryArgs: QueryArguments[T],
+    // it's necessary to separate user data from query variables
+    // since the latter is passed into payload as a whole
+    // while the former is only used in the crawler
+    additionalUserData: AdditionalUserData[T]
 ): RequestOptions => {
     const url = constructGraphQLUrl(queryType);
 
@@ -19,9 +26,19 @@ export const constructGraphQLRequest = <T extends QueryType>(
                 variables: queryArgs,
             },
             operationType: queryType,
+            additional: additionalUserData,
         },
         label: queryType.toString(),
     };
+};
+
+export type UserData<T extends QueryType> = {
+    initialPayload: {
+        queryName: T;
+        variables: QueryArguments[T];
+    };
+    operationType: T;
+    additional: AdditionalUserData[T];
 };
 
 const constructGraphQLUrl = (queryType: QueryType): string => {

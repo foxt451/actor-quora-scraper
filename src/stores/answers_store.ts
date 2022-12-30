@@ -51,6 +51,10 @@ class AnswersStore {
             ),
         });
     }
+
+    public getCountFor(qid: string) {
+        return this.answers.get(qid)?.answers.length ?? 0;
+    }
 }
 
 export const answerStore = new AnswersStore();

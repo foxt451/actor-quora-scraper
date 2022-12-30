@@ -4,6 +4,7 @@ import { DEFAULT_QUERY_EXTENSIONS } from "./constants/extension_codes.js";
 import {
     constructAnswersKVKey,
     constructGraphQLRequest,
+    UserData,
 } from "./helpers/index.js";
 import { proxyConfiguration } from "./main.js";
 import { parseQuestionAnswersPage } from "./page_scrapers/parse_question_answers_page.js";
@@ -19,14 +20,14 @@ export const router = createBasicRouter();
 
 const defaultCrawlerState: CrawlerState = {
     extensionCodes: DEFAULT_QUERY_EXTENSIONS,
+    qids: new Set(),
 };
 
 // attach proxy url to each session
 router.use(async ({ session, log }) => {
     if (session && !session.userData.isProxySet) {
         session.userData.proxyUrl =
-            proxyConfiguration &&
-            (await proxyConfiguration.newUrl(session.id));
+            proxyConfiguration && (await proxyConfiguration.newUrl(session.id));
         log.debug(
             `Selected ${session.userData.proxyUrl} as proxy url for session with id: ${session.id}`
         );
@@ -74,7 +75,7 @@ router.use(async ({ request, crawler, log, session }) => {
     );
 });
 
-router.addHandler(
+router.addHandler<UserData<QueryType.SEARCH>>(
     QueryType.SEARCH,
     async ({ sendRequest, session, crawler, request, log }) => {
         const proxyUrl = session?.userData.proxyUrl;
@@ -104,37 +105,70 @@ router.addHandler(
             throw e;
         }
 
-        await Dataset.pushData(questions);
+        const crawlerState = await crawler.useState(defaultCrawlerState);
+        const dedupedQuestions = questions.filter(
+            (question) => !crawlerState.qids.has(question.qid)
+        );
+        dedupedQuestions.forEach((question) =>
+            crawlerState.qids.add(question.qid)
+        );
+        await Dataset.pushData(dedupedQuestions);
 
-        log.info(`Scraped ${questions.length} questions from search`);
-
-        for (const question of questions) {
-            await crawler.addRequests([
-                constructGraphQLRequest(QueryType.QUESTION_ANSWERS, {
-                    after: "0",
-                    qid: question.qid,
-                    first: PAGINATION_PARAMS.PAGINATION_BATCH,
-                    ...nonConfigurableQueryArguments[
-                        QueryType.QUESTION_ANSWERS
-                    ],
-                }),
-            ]);
+        log.info(`Scraped ${dedupedQuestions.length} questions from search`);
+        if (request.userData.additional.maxAnswersPerQuestion !== 0) {
+            for (const question of dedupedQuestions) {
+                await crawler.addRequests([
+                    constructGraphQLRequest(
+                        QueryType.QUESTION_ANSWERS,
+                        {
+                            after: null,
+                            qid: question.qid,
+                            first: request.userData.additional.answersBatchSize,
+                            ...nonConfigurableQueryArguments[
+                                QueryType.QUESTION_ANSWERS
+                            ],
+                            forceScoreVersion:
+                                request.userData.additional.answersRanking,
+                        },
+                        {
+                            maxAnswersPerQuestion:
+                                request.userData.additional
+                                    .maxAnswersPerQuestion,
+                            answersBatchSize:
+                                request.userData.additional.answersBatchSize,
+                            answersRanking:
+                                request.userData.additional.answersRanking,
+                        }
+                    ),
+                ]);
+            }
         }
 
         if (pageInfo.hasNextPage) {
             await crawler.addRequests([
-                constructGraphQLRequest(QueryType.SEARCH, {
-                    after: pageInfo.endCursor,
-                    first: PAGINATION_PARAMS.PAGINATION_BATCH,
-                    query: request.userData.initialPayload.variables.query,
-                    ...nonConfigurableQueryArguments[QueryType.SEARCH],
-                }),
+                constructGraphQLRequest(
+                    QueryType.SEARCH,
+                    {
+                        after: pageInfo.endCursor,
+                        first: PAGINATION_PARAMS.PAGINATION_BATCH,
+                        query: request.userData.initialPayload.variables.query,
+                        ...nonConfigurableQueryArguments[QueryType.SEARCH],
+                    },
+                    {
+                        maxAnswersPerQuestion:
+                            request.userData.additional.maxAnswersPerQuestion,
+                        answersBatchSize:
+                            request.userData.additional.answersBatchSize,
+                        answersRanking:
+                            request.userData.additional.answersRanking,
+                    }
+                ),
             ]);
         }
     }
 );
 
-router.addHandler(
+router.addHandler<UserData<QueryType.QUESTION_ANSWERS>>(
     QueryType.QUESTION_ANSWERS,
     async ({ sendRequest, session, request, log, crawler, proxyInfo }) => {
         const proxyUrl = session?.userData.proxyUrl;
@@ -162,24 +196,43 @@ router.addHandler(
             throw e;
         }
         const { qid } = request.userData.initialPayload.variables;
-        answerStore.addAnswers(answers, qid);
+        answerStore.addAnswers(answers, qid.toString());
         log.info(
             `Scraped ${
                 answers.length
             } answers from a question with qid: ${qid}. Saved to KeyValueStore with key: ${constructAnswersKVKey(
-                qid
+                qid.toString()
             )}`
         );
-        if (pageInfo.hasNextPage) {
+        if (
+            pageInfo.hasNextPage &&
+            (request.userData.additional.maxAnswersPerQuestion === -1 ||
+                answerStore.getCountFor(qid.toString()) <
+                    request.userData.additional.maxAnswersPerQuestion)
+        ) {
+            log.debug(`Scraping more answers for question with qid: ${qid}`);
             await crawler.addRequests([
-                constructGraphQLRequest(QueryType.QUESTION_ANSWERS, {
-                    after: pageInfo.endCursor,
-                    first: PAGINATION_PARAMS.PAGINATION_BATCH,
-                    qid,
-                    ...nonConfigurableQueryArguments[
-                        QueryType.QUESTION_ANSWERS
-                    ],
-                }),
+                constructGraphQLRequest(
+                    QueryType.QUESTION_ANSWERS,
+                    {
+                        after: pageInfo.endCursor,
+                        first: request.userData.additional.answersBatchSize,
+                        qid,
+                        ...nonConfigurableQueryArguments[
+                            QueryType.QUESTION_ANSWERS
+                        ],
+                        forceScoreVersion:
+                            request.userData.additional.answersRanking,
+                    },
+                    {
+                        maxAnswersPerQuestion:
+                            request.userData.additional.maxAnswersPerQuestion,
+                        answersBatchSize:
+                            request.userData.additional.answersBatchSize,
+                        answersRanking:
+                            request.userData.additional.answersRanking,
+                    }
+                ),
             ]);
         }
     }
