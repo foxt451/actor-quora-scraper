@@ -1,5 +1,6 @@
 import { Actor } from "apify";
 import { BasicCrawler } from "crawlee";
+import cuid from 'cuid';
 import { PAGINATION_PARAMS } from "./constants/api.js";
 import { ERROR_MESSAGES } from "./constants/error_messages.js";
 import { constructGraphQLRequest } from "./helpers/index.js";
@@ -35,7 +36,7 @@ export const proxyConfiguration = await Actor.createProxyConfiguration(
 );
 
 const answerDataset = useAnswerDataset
-    ? await Actor.openDataset(`ANSWERS`)
+    ? await Actor.openDataset(`ANSWERS-${cuid}`)
     : undefined;
 
 const crawler = new BasicCrawler({
