@@ -36,7 +36,7 @@ export const proxyConfiguration = await Actor.createProxyConfiguration(
 );
 
 const answerDataset = useAnswerDataset
-    ? await Actor.openDataset(`ANSWERS-${cuid()}`)
+    ? await Actor.openDataset(`ANSWERS-${Actor.config.get('actorRunId')}`)
     : undefined;
 
 const crawler = new BasicCrawler({
