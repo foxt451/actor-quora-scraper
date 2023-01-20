@@ -25,6 +25,7 @@ const {
     maxUsageCount = 200,
     maxAnswersPerQuestion,
     answersRanking,
+    useAnswerDataset = false,
 } = input;
 
 export const proxyConfiguration = await Actor.createProxyConfiguration(
@@ -33,8 +34,12 @@ export const proxyConfiguration = await Actor.createProxyConfiguration(
     }
 );
 
+const answerDataset = useAnswerDataset
+    ? await Actor.openDataset(`ANSWERS`)
+    : undefined;
+
 const crawler = new BasicCrawler({
-    requestHandler: router,
+    requestHandler: (context) => router({ ...context, answerDataset }),
     // use multiple sessions to enable quick concurrent scraping
     // without getting noticed by Quora's rate limiting
     useSessionPool: true,

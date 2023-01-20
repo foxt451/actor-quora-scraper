@@ -27,6 +27,12 @@
             "enumTitles": ["Automatic by Quora", "Sort by upvotes", "Sort by recency"],
             "default": "ranking_toggle_upvote"
         },
+        "useAnswerDataset": {
+            "title": "Use answer dataset",
+            "description": "Whether to store all answers in a separate dataset for easier extraction.",
+            "type": "boolean",
+            "default": false
+        },
         "proxy": {
             "title": "Proxy configuration",
             "type": "object",

@@ -11,12 +11,12 @@ import { parseQuestionAnswersPage } from "./page_scrapers/parse_question_answers
 import { parseSearchResult } from "./page_scrapers/parse_search_result.js";
 import { scrapeCookies } from "./page_scrapers/scrape_cookies.js";
 import { answerStore } from "./stores/answers_store.js";
-import { CrawlerState } from "./types/crawler_state.js";
+import { CrawlerContext, CrawlerState } from "./types/crawler.js";
 import { AnswerInfo, PageInfo, QuestionInfo } from "./types/parser_results.js";
 import { nonConfigurableQueryArguments } from "./types/query_arguments.js";
 import { QueryType } from "./types/query_types.js";
 
-export const router = createBasicRouter();
+export const router = createBasicRouter<CrawlerContext>();
 
 const defaultCrawlerState: CrawlerState = {
     extensionCodes: DEFAULT_QUERY_EXTENSIONS,
@@ -170,7 +170,7 @@ router.addHandler<UserData<QueryType.SEARCH>>(
 
 router.addHandler<UserData<QueryType.QUESTION_ANSWERS>>(
     QueryType.QUESTION_ANSWERS,
-    async ({ sendRequest, session, request, log, crawler, proxyInfo }) => {
+    async ({ sendRequest, session, request, log, crawler, proxyInfo, answerDataset }) => {
         const proxyUrl = session?.userData.proxyUrl;
         const { body, statusCode, headers } = await sendRequest({
             headers: session?.userData.headers,
@@ -197,6 +197,9 @@ router.addHandler<UserData<QueryType.QUESTION_ANSWERS>>(
         }
         const { qid } = request.userData.initialPayload.variables;
         answerStore.addAnswers(answers, qid.toString());
+        if (answerDataset) {
+            await answerDataset.pushData(answers)
+        }
         log.info(
             `Scraped ${
                 answers.length

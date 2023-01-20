@@ -2,7 +2,7 @@ import { Log } from "apify";
 import { Session } from "crawlee";
 import { gotScraping, OptionsOfTextResponseBody } from "got-scraping";
 import { BASE_URL } from "../constants/api.js";
-import { CrawlerState } from "../types/crawler_state.js";
+import { CrawlerState } from "../types/crawler.js";
 import { NecessaryHeaders } from "../types/header_collection.js";
 import { QueryType } from "../types/query_types.js";
 import { scrapeHashes } from "./scrape_hash.js";

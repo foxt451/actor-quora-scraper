@@ -11,4 +11,5 @@ export type Input = {
     maxPoolSize: number | undefined;
     maxAgeSecs: number | undefined;
     maxUsageCount: number | undefined;
+    useAnswerDataset?: boolean
 };
