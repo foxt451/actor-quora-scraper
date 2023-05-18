@@ -42,7 +42,10 @@ export type UserData<T extends QueryType> = {
     additional: AdditionalUserData[T];
 };
 
-const constructGraphQLUrl = (queryType: QueryType, langCode: string): string => {
+const constructGraphQLUrl = (
+    queryType: QueryType,
+    langCode: string
+): string => {
     return `${BASE_URL(langCode)}/graphql/gql_para_POST?q=${queryType}`;
 };
 
@@ -51,7 +54,12 @@ export const parseJsonContent = (contentObj: string): string => {
     if (matches.length === 0) {
         return contentObj;
     }
-    return matches.map((match) => match[1]).join("");
+    const joined = matches.map((match) => match[1]).join("");
+    try {
+        return JSON.parse(`"${joined}"`);
+    } catch (e) {
+        return joined;
+    }
 };
 
 export const combineUrl = (url: string, langCode: string): string => {
