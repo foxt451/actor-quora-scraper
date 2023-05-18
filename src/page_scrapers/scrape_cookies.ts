@@ -11,7 +11,8 @@ import { scrapeHeaders } from "./scrape_headers.js";
 export const scrapeCookies = async (
     session: Session,
     log: Log,
-    crawlerState: CrawlerState
+    crawlerState: CrawlerState,
+    langCode: string
 ): Promise<void> => {
     const { proxyUrl } = session.userData;
     log.debug(
@@ -21,14 +22,14 @@ export const scrapeCookies = async (
     // don't support proxyUrl, see this issue: https://github.com/apify/got-scraping/issues/66
     const response = await gotScraping({
         method: "GET",
-        url: BASE_URL,
+        url: BASE_URL(langCode),
         proxyUrl,
     } as OptionsOfTextResponseBody);
     session.setCookiesFromResponse(response);
     const headers: NecessaryHeaders = {
         "Content-Type": "application/json",
-        Host: "www.quora.com",
-        Origin: "https://www.quora.com",
+        Host: `${langCode}.quora.com`,
+        Origin: `https://${langCode}.quora.com`,
         ...scrapeHeaders(response.body),
     };
     session.userData.headers = headers;
@@ -55,7 +56,7 @@ export const scrapeCookies = async (
     );
     log.debug(
         `Attached cookies are: ${session.getCookieString(
-            BASE_URL
+            BASE_URL(langCode)
         )}. Attached headers are: ${JSON.stringify(
             headers
         )}. Current hashes are: ${JSON.stringify(crawlerState.extensionCodes)}`

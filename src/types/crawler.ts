@@ -9,5 +9,6 @@ export type CrawlerState = {
 };
 
 export type CrawlerContext = BasicCrawlingContext & {
-    answerDataset: Dataset | undefined
+    answerDataset: Dataset | undefined,
+    languageCode: string;
 }

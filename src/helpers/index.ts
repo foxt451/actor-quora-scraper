@@ -8,13 +8,14 @@ import { QueryType } from "../types/query_types.js";
 
 export const constructGraphQLRequest = <T extends QueryType>(
     queryType: T,
+    langCode: string,
     queryArgs: QueryArguments[T],
     // it's necessary to separate user data from query variables
     // since the latter is passed into payload as a whole
     // while the former is only used in the crawler
     additionalUserData: AdditionalUserData[T]
 ): RequestOptions => {
-    const url = constructGraphQLUrl(queryType);
+    const url = constructGraphQLUrl(queryType, langCode);
 
     return {
         uniqueKey: url + JSON.stringify(queryArgs),
@@ -41,8 +42,8 @@ export type UserData<T extends QueryType> = {
     additional: AdditionalUserData[T];
 };
 
-const constructGraphQLUrl = (queryType: QueryType): string => {
-    return `${BASE_URL}/graphql/gql_para_POST?q=${queryType}`;
+const constructGraphQLUrl = (queryType: QueryType, langCode: string): string => {
+    return `${BASE_URL(langCode)}/graphql/gql_para_POST?q=${queryType}`;
 };
 
 export const parseJsonContent = (contentObj: string): string => {
@@ -53,8 +54,8 @@ export const parseJsonContent = (contentObj: string): string => {
     return matches.map((match) => match[1]).join("");
 };
 
-export const combineUrl = (url: string, base = BASE_URL): string => {
-    return new URL(url, base).toString();
+export const combineUrl = (url: string, langCode: string): string => {
+    return new URL(url, BASE_URL(langCode)).toString();
 };
 
 export const unixToDateIso = (timestamp: number, divider = 1000): string => {

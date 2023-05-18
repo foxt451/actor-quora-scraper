@@ -11,6 +11,12 @@
             "editor": "stringList",
             "prefill": ["how to drink yogurt"]
         },
+        "languageCode": {
+            "title": "Language code",
+            "type": "string",
+            "description": "Provide preferred site language. If used, it will query [langcode].quora.com instead of www.quora.com, e.g. es.quora.com for Spanish.",
+            "editor": "textfield"
+        },
         "maxAnswersPerQuestion": {
             "title": "Max answers per question",
             "type": "integer",

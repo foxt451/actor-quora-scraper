@@ -8,7 +8,8 @@ const ANSWER_TYPENAME = "QuestionAnswerItem";
 // API responses typed as any deliberately because API is complex and subject to change
 export const parseQuestionAnswersPage = (
     result: any,
-    log: Log
+    log: Log,
+    langCode: string
 ): {
     answers: AnswerInfo[];
     pageInfo: PageInfo;
@@ -37,7 +38,7 @@ export const parseQuestionAnswersPage = (
             const answer: AnswerInfo = {
                 aid,
                 id,
-                url: combineUrl(url),
+                url: combineUrl(url, langCode),
                 content: parseJsonContent(content),
                 originalContent: content,
                 creationTime: unixToDateIso(creationTime),
@@ -46,7 +47,7 @@ export const parseQuestionAnswersPage = (
                 qid,
                 isAuthorAnon,
                 uid,
-                profileUrl: combineUrl(profileUrl),
+                profileUrl: combineUrl(profileUrl, langCode),
                 names: names.map((nameInfo: any) => ({
                     givenName: nameInfo.givenName,
                     familyName: nameInfo.familyName,

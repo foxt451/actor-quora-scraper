@@ -42,10 +42,10 @@ router.use(async ({ session, log }) => {
 // this map is to avoid race condition by making other session requests wait for the first request that went to scrape cookies;
 // this avoids concurrent session requests hitting home page to scrape cookies multiple times
 const scrapeCookiesPromiseMap: Map<string, Promise<void>> = new Map();
-router.use(async ({ session, log, crawler }) => {
+router.use(async ({ session, log, crawler, languageCode }) => {
     const crawlerState = await crawler.useState(defaultCrawlerState);
     if (session && !scrapeCookiesPromiseMap.get(session.id)) {
-        const scrapeCookiesPromise = scrapeCookies(session, log, crawlerState);
+        const scrapeCookiesPromise = scrapeCookies(session, log, crawlerState, languageCode);
         scrapeCookiesPromiseMap.set(session.id, scrapeCookiesPromise);
         await scrapeCookiesPromise;
     } else if (session) {
@@ -77,7 +77,7 @@ router.use(async ({ request, crawler, log, session }) => {
 
 router.addHandler<UserData<QueryType.SEARCH>>(
     QueryType.SEARCH,
-    async ({ sendRequest, session, crawler, request, log }) => {
+    async ({ sendRequest, session, crawler, request, log, languageCode }) => {
         const proxyUrl = session?.userData.proxyUrl;
 
         const { body, statusCode, headers } = await sendRequest({
@@ -85,13 +85,13 @@ router.addHandler<UserData<QueryType.SEARCH>>(
             // when using BasicCrawler, you have to attach proxy manually
             proxyUrl,
         });
-
         let pageInfo: PageInfo;
         let questions: QuestionInfo[];
         try {
             ({ pageInfo, questions } = parseSearchResult(
                 JSON.parse(body),
-                log
+                log,
+                languageCode
             ));
         } catch (e) {
             log.debug(
@@ -120,6 +120,7 @@ router.addHandler<UserData<QueryType.SEARCH>>(
                 await crawler.addRequests([
                     constructGraphQLRequest(
                         QueryType.QUESTION_ANSWERS,
+                        languageCode,
                         {
                             after: null,
                             qid: question.qid,
@@ -148,6 +149,7 @@ router.addHandler<UserData<QueryType.SEARCH>>(
             await crawler.addRequests([
                 constructGraphQLRequest(
                     QueryType.SEARCH,
+                    languageCode,
                     {
                         after: pageInfo.endCursor,
                         first: PAGINATION_PARAMS.PAGINATION_BATCH,
@@ -170,7 +172,7 @@ router.addHandler<UserData<QueryType.SEARCH>>(
 
 router.addHandler<UserData<QueryType.QUESTION_ANSWERS>>(
     QueryType.QUESTION_ANSWERS,
-    async ({ sendRequest, session, request, log, crawler, proxyInfo, answerDataset }) => {
+    async ({ sendRequest, session, request, log, crawler, proxyInfo, answerDataset, languageCode }) => {
         const proxyUrl = session?.userData.proxyUrl;
         const { body, statusCode, headers } = await sendRequest({
             headers: session?.userData.headers,
@@ -182,7 +184,8 @@ router.addHandler<UserData<QueryType.QUESTION_ANSWERS>>(
         try {
             ({ pageInfo, answers } = parseQuestionAnswersPage(
                 JSON.parse(body),
-                log
+                log,
+                languageCode
             ));
         } catch (e) {
             log.debug(
@@ -217,6 +220,7 @@ router.addHandler<UserData<QueryType.QUESTION_ANSWERS>>(
             await crawler.addRequests([
                 constructGraphQLRequest(
                     QueryType.QUESTION_ANSWERS,
+                    languageCode,
                     {
                         after: pageInfo.endCursor,
                         first: request.userData.additional.answersBatchSize,

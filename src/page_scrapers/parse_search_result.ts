@@ -9,7 +9,8 @@ import { PageInfo, QuestionInfo } from "../types/parser_results.js";
 // API responses typed as any deliberately because API is complex and subject to change
 export const parseSearchResult = (
     result: any,
-    log: Log
+    log: Log,
+    langCode: string
 ): {
     questions: QuestionInfo[];
     pageInfo: PageInfo;
@@ -24,7 +25,7 @@ export const parseSearchResult = (
             const question: QuestionInfo = {
                 qid,
                 id,
-                url: combineUrl(url),
+                url: combineUrl(url, langCode),
                 title: parseJsonContent(title),
                 originalTitle: title,
                 creationTime: unixToDateIso(creationTime),

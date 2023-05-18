@@ -6,6 +6,7 @@ export type Input = {
     proxy?: ProxyConfigurationOptions & {
         useApifyProxy?: boolean;
     };
+    languageCode?: string;
     maxAnswersPerQuestion: number | undefined;
     answersRanking: AnswersRanking | undefined;
     maxPoolSize: number | undefined;
