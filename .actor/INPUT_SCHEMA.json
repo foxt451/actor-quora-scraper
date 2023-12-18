@@ -9,7 +9,7 @@
             "type": "array",
             "description": "Quora will search for questions using this strings.",
             "editor": "stringList",
-            "prefill": ["how to drink yogurt"]
+            "prefill": ["Who was Napoleon Bonaparte?"]
         },
         "languageCode": {
             "title": "Language code",
