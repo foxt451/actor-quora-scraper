@@ -3,6 +3,7 @@ import { AnswersRanking } from "./query_arguments";
 
 export type Input = {
     queries: string[];
+    maxQuestions: number | undefined;
     proxy?: ProxyConfigurationOptions & {
         useApifyProxy?: boolean;
     };

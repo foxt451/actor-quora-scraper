@@ -40,7 +40,7 @@ const answerDataset = useAnswerDataset
     : undefined;
 
 const crawler = new BasicCrawler({
-    requestHandler: (context) => router({ ...context, answerDataset, languageCode }),
+    requestHandler: (context) => router({ ...context, answerDataset, languageCode, maxQuestions: input.maxQuestions }),
     // use multiple sessions to enable quick concurrent scraping
     // without getting noticed by Quora's rate limiting
     useSessionPool: true,

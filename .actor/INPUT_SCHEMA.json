@@ -11,6 +11,13 @@
             "editor": "stringList",
             "prefill": ["Who was Napoleon Bonaparte?"]
         },
+        "maxQuestions": {
+            "title": "Max questions",
+            "type": "integer",
+            "description": "Limit number of extracted questions (overall). Set to 0 to disable this limit.",
+            "editor": "number",
+            "default": 100
+        },
         "languageCode": {
             "title": "Language code",
             "type": "string",

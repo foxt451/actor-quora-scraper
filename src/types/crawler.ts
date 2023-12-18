@@ -11,4 +11,5 @@ export type CrawlerState = {
 export type CrawlerContext = BasicCrawlingContext & {
     answerDataset: Dataset | undefined,
     languageCode: string;
+    maxQuestions: number | undefined;
 }

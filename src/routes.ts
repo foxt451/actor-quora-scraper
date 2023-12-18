@@ -77,7 +77,7 @@ router.use(async ({ request, crawler, log, session }) => {
 
 router.addHandler<UserData<QueryType.SEARCH>>(
     QueryType.SEARCH,
-    async ({ sendRequest, session, crawler, request, log, languageCode }) => {
+    async ({maxQuestions, sendRequest, session, crawler, request, log, languageCode }) => {
         const proxyUrl = session?.userData.proxyUrl;
 
         const { body, statusCode, headers } = await sendRequest({
@@ -145,6 +145,12 @@ router.addHandler<UserData<QueryType.SEARCH>>(
             }
         }
 
+        if (maxQuestions && crawlerState.qids.size >= maxQuestions) {
+            log.info(
+                `Reached the maximum number of questions to scrape: ${maxQuestions}. Stopping search for ${request.userData.initialPayload.variables.query}`
+            );
+            return;
+        }
         if (pageInfo.hasNextPage) {
             await crawler.addRequests([
                 constructGraphQLRequest(
